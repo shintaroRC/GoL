@@ -13,6 +13,9 @@ class game_of_life:
         if height is None:
             self.height = len(cells)
 
+    def __str__(self):
+        return "\n".join(["".join([str(x) for x in row]) for row in self.cells])
+
     def update_cells(self):
         width = self.width
         height = self.height
@@ -24,11 +27,13 @@ class game_of_life:
         self.cells = new_cells[:]
 
     def _num_of_nbhd(self, i, j):
-        return (self.cells[(i-1+self.height)%self.height][(j-1+self.width)%self.width]
-        +self.cells[i][(j-1+self.width)%self.width]+self.cells[(i+1)%self.height][(j-1+self.width)%self.width]
-        +self.cells[(i-1+self.height)%self.height][j]+self.cells[(i+1)%self.height][j]
-        +self.cells[(i-1+self.height)%self.height][(j+1)%self.width]+self.cells[i][(j+1)%self.width]
-        +self.cells[(i+1)%self.height][(j+1)%self.height])
+        above = i-1
+        below = (i+1)%self.height
+        left = j-1
+        right = (j+1)%self.width
+        return (self.cells[above][left]+self.cells[i][left]+self.cells[below][left]
+                +self.cells[above][j]+self.cells[below][j]
+                +self.cells[above][right]+self.cells[i][right]+self.cells[below][right])
 
     def _next_cell_state(self, i, j):
         if self.cells[i][j]==0:
@@ -41,3 +46,23 @@ class game_of_life:
                 return 1
             else:
                 return 0
+
+if __name__ == "__main__":
+    example_cells = game_of_life(cells=[[0,1,0,0,0],[0,0,1,0,0],[1,1,1,0,0],[0,0,0,0,0],[0,0,0,0,0]])
+    print(example_cells)
+    print("")
+    example_cells.update_cells()
+    print(example_cells)
+    print("")
+    example_cells.update_cells()
+    print(example_cells)
+    print("")
+    example_cells.update_cells()
+    print(example_cells)
+    print("")
+    example_cells.update_cells()
+    print(example_cells)
+    print("")
+    example_cells.update_cells()
+    print(example_cells)
+    print("")
