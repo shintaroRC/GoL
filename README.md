@@ -1,1 +1,1 @@
-# GoL
+# GoLSimulator
