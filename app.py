@@ -2,56 +2,50 @@
 # -*- coding: utf8 -*-
 from gol import game_of_life
 import tkinter as tk
+import ast
 
 class GoLPainter:
-    def __init__(self, master, cell_size, alive_color, dead_color, gol):
+    def __init__(self, master, cell_size, alive_color, dead_color, margin, gol):
         self.master = master
         self.cell_size = cell_size
         self.alive_color = alive_color
         self.dead_color = dead_color
+        self.margin = margin
         self.gol = gol
-        self.width = cell_size*gol.width
-        self.height = cell_size*gol.height
+        self.width = cell_size*gol.width+margin*2
+        self.height = cell_size*gol.height+margin*2
         self.view = self._create_cells_view(master)
-        self.view.pack()
+        self.view.place(x=0,y=0)
 
     def _create_cells_view(self, master):
-        cells_view = tk.Frame(master, width=self.width, height=self.height)
-        for cells_row_index in range(self.gol.height):
-            self._create_cells_row_view(cells_view, cells_row_index).pack(side='top')
-
+        cells_view = tk.Canvas(master, width=self.width, height=self.height)
+        for row_index in range(self.gol.height):
+            for column_index in range(self.gol.width):
+                cell_color = self.alive_color if self.gol.cells[row_index][column_index] else self.dead_color
+                cell_tag = (str(row_index), str(column_index))
+                cells_view.create_rectangle(column_index*self.cell_size+self.margin,
+                                            row_index*self.cell_size+self.margin,
+                                            (column_index+1)*self.cell_size+self.margin,
+                                            (row_index+1)*self.cell_size+self.margin,
+                                            width=0,
+                                            fill= cell_color,
+                                            tag= cell_tag)
+        cells_view.tag_bind('all', '<Button-1>', self.change_cell_state_on_click)
         return cells_view
-
-    def _create_cells_row_view(self, master, cells_row_index):
-        cells_row_view = tk.Frame(master, width=self.width, height=self.cell_size)
-        for cells_column_index in range(self.gol.width):
-            cell_view = self._create_cell_view(cells_row_view, cells_row_index, cells_column_index)
-            cell_view.bind('<Button-1>', self.change_cell_state_on_click)
-            cell_view.pack(side='left')
-
-        return cells_row_view
-
-    def _create_cell_view(self, master, cells_row_index, cells_column_index):
-        return CellWidget(master, self.cell_size, self.alive_color, self.dead_color,
-                            self.gol.cells[cells_row_index][cells_column_index],
-                            cells_row_index, cells_column_index)
-
 
     def upadate_cells_generation(self):
         pass
 
+
     def change_cell_state_on_click(self, event):
-        row_index = event.widget.row_index
-        column_index = event.widget.column_index
+        canvas = event.widget
+        cell = canvas.find_withtag('current')
+        row_index =  int(canvas.gettags(cell)[0])
+        column_index = int(canvas.gettags(cell)[1])
+
         self.gol.cells[row_index][column_index] = not self.gol.cells[row_index][column_index]
-        event.widget['bg'] = self.alive_color if self.gol.cells[row_index][column_index] else self.dead_color
-
-class CellWidget(tk.Frame):
-    def __init__(self, master, cell_size, alive_color, dead_color, cell_state, row_index, column_index):
-        super().__init__(master,width=cell_size, height=cell_size,bg=alive_color if cell_state else dead_color)
-        self.row_index = row_index
-        self.column_index = column_index
-
+        new_cell_color = self.alive_color if self.gol.cells[row_index][column_index] else self.dead_color
+        canvas.itemconfig(cell,fill=new_cell_color)
 
 if __name__ == '__main__':
     root = tk.Tk()
@@ -68,7 +62,7 @@ if __name__ == '__main__':
                                         [False,False,False,False,False,False,False,False,False,False],
                                         [False,False,False,False,False,False,False,False,False,False]])
 
-    example_painter = GoLPainter(root, cell_size=10, alive_color='#000000', dead_color='#ffffff', gol=example_cells)
+    example_painter = GoLPainter(root, cell_size=20, alive_color='#000000', dead_color='#ffffff', margin=3, gol=example_cells)
     root.geometry(str(example_painter.width) + 'x' + str(example_painter.height))
 
     root.mainloop()

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
-
 class game_of_life:
     def __init__(self, width=None, height=None, cells=None):
         self.width = width
